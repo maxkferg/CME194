@@ -3,15 +3,7 @@
 using MPI
 MPI.Init()
 
-# specify, number of mpi workers, launch cmd, etc.
-manager=MPIManager(np=4)
 comm = MPI.COMM_WORLD
-
-
-# start mpi workers and add them as julia workers too.
-addprocs(manager)
-
-
 
 function counter(n)
 	total = 0
