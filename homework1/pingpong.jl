@@ -1,5 +1,3 @@
-
-# to import MPIManager
 using MPI
 MPI.Init()
 
