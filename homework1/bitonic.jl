@@ -116,7 +116,6 @@ function main()
 
     MPI.Barrier(comm)
     gather(x)
-    MPI.Barrier(comm)
 end
 main()
 
@@ -126,6 +125,9 @@ main()
 # - x must be a vector
 
 
+
+MPI.Barrier(comm)
+MPI.Finalize()
 
 
 
