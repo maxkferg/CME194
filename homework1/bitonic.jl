@@ -86,7 +86,7 @@ function gather(x)
     else
         gathered = x;
 
-        for i=1:size-1
+        for i=1:csize-1
             response = MPI.recv(i,i+32,comm)
             gathered = vcat(gathered,response[1])
         end
@@ -111,11 +111,13 @@ end
 function main()
     N = 4 # The number of values on each processor
     x = vec(rand(1:100,1,N)) # The vector of values on this processor
-    ranks = 0:size-1
+    ranks = 0:csize-1
     bitonic_sort!(x,true,ranks)
 
     MPI.Barrier(comm)
     gather(x)
+    MPI.Barrier(comm)
+    MPI.Finalize()
 end
 main()
 
@@ -125,9 +127,6 @@ main()
 # - x must be a vector
 
 
-
-MPI.Barrier(comm)
-MPI.Finalize()
 
 
 
