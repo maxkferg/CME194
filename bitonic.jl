@@ -9,47 +9,46 @@ size = MPI.Comm_size(comm)
 println("$rank: Starting up")
 
 
-function bitonic_sort(up,x)
-    if length(x) <= 1
+function bitonic_sort(x,up,ranks)
+    println("$x")
+    if length(ranks) <= 1
         return x
     else
-        dist = round(Int,length(x) / 2)
-        first = bitonic_sort(true, x[1:dist])
-        second = bitonic_sort(false, x[dist+1:end])
-        return bitonic_merge(up, vcat(first,second))
+        dist = round(Int,length(ranks) / 2)
+        first = bitonic_sort(x, true, ranks[1:dist])
+        second = bitonic_sort(x, false, ranks[dist+1:end])
+        return bitonic_merge(x, up, vcat(first,second))
     end
 end
 
 
 
-function bitonic_merge(up,x)
-    # assume input x is bitonic, and sorted list is returned 
-    if length(x) == 1
-        return x
+function bitonic_merge(x,up,ranks)
+    # Assuming the data on @ranks is bitonic, the data will become sorted 
+    if length(ranks) == 1
+        return ranks
     else
-        bitonic_compare(up, x)
-        dist = round(Int,length(x) / 2)
-        first = bitonic_merge(up,x[1:dist])
-        second = bitonic_merge(up,x[dist+1:end])
+        bitonic_compare(x, up, ranks)
+        dist = round(Int,length(ranks) / 2)
+        first = bitonic_merge(x, up, ranks[1:dist])
+        second = bitonic_merge(x, up, ranks[dist+1:end])
         return vcat(first,second)
     end 
 end
 
  
 
-#function bitonic_compare(up,x)
-#    dist = round(Int,length(x) / 2)
-#    #print(dist)
-#    for i in 1:dist
-#        if (x[i] > x[i + dist])==up
-##            x[i], x[i + dist] = x[i + dist], x[i] #swap
-#        end
-#    end
-#end
 
-
-
-
+function bitonic_compare(x,up,ranks)
+    # Perform a bitonic compare between the processors in @ranks
+    dist = round(Int,length(ranks) / 2)
+    for i in 1:dist
+        if (ranks[i] > ranks[i + dist])==up
+            ranks[i], ranks[i + dist] = ranks[i + dist], ranks[i] #swap
+        end
+        #bitonic_swap(x,up,ranks[i],ranks[i + dist])
+    end
+end
 
 
 
@@ -57,8 +56,9 @@ function bitonic_swap(x,up,ranka,rankb)
     # Compare the values on this processor against another processor
     # The values on ranka always end smaller than the values on rankb
 
+    newx = x
     up2order = rank<size/2
-    x = sort(x, rev=~up);
+    sort!(x, rev=~up);
  
     # Send the data over to processor rank+1
     if (rank==ranka)
@@ -67,8 +67,8 @@ function bitonic_swap(x,up,ranka,rankb)
         #println("$rank: Sending $rank -> $rankb = $x ")
         MPI.send(x, rankb, rank+32, comm)
         #println("$rank: Waiting for message from $rankb")
-        x = MPI.recv(rankb, MPI.ANY_TAG, comm)[1]
-        #println("$rank: Receiving $ranka -> $rank = $x ")
+        newx = MPI.recv(rankb, MPI.ANY_TAG, comm)[1]
+        println("$rank: Receiving $ranka -> $rank = $newx ")
 
     elseif (rank==rankb)   
         x_src = MPI.recv(ranka,  ranka+32, comm)[1]
@@ -76,14 +76,18 @@ function bitonic_swap(x,up,ranka,rankb)
         x_merged = sort(x_merged, rev=~up);
         # Split the array in half, and send back the smaller one
         dist = round(Int,length(x_merged) / 2)
-        x = x_merged[dist+1:end]
+        newx = x_merged[dist+1:end]
         s = x_merged[1:dist]
         MPI.send(s, ranka, rank+128, comm)
-        #println("$rank: Bouncing $rank -> $ranka = $x ") 
+        println("$rank: Bouncing $rank -> $ranka = $x ") 
     end
 
-    x = sort(x, rev=~up);
-    return x
+    # Modify x in place with newx
+    for i in 1:length(newx)
+        x[i] = newx[i]
+    end
+
+    sort!(x, rev=~up);
 end
 
 
@@ -97,7 +101,12 @@ end
 
 
 
-function bitonic_compare(x,min,max)
+
+
+
+
+
+function bitonic_compare_old(x,min,max)
     # Form a bitonic vector that stretches from min->max
     # @min and @max are processor ranks
     # Min is included in the bitonic vector but max is not
@@ -161,15 +170,6 @@ end
 
 
 
-function main(x)
-    x = bitonic_compare(x,0,8)
-    return x
-end
-
-
-
-
-
 
 function gather(x)
     # Gather the sequences and check their validity
@@ -196,36 +196,32 @@ function gather(x)
         if all(sorted==gathered)
             println("Success!!!")
         else
-            #println("Failure!!!")
+            println("Failure!!!")
         end
     end
 end
 
 
 
-#array = [1,2,9,4,5,6,7,8,9,10,11,12,13,14,15,16]
-#array = [9,1,3,4,5,6,14,7,8,16,10,11,12,2,13,15,68]
-#bitonic_compare(true,array)
-#sorted = bitonic_sort(true,array)
-#println(sorted)
 
 N = 2
 #x = vec(rand(1:100,1,N))
-#x = 2*(size-rank-1)*vec([1,1]) + vec([0,1])
-x=vec([size-rank])
-println(x)
-x = main(x)
-    
+
+
+x = vec([18-rank]);
+x=bitonic_sort(x,true,[0,1,2,3,4,5,6,7])
+println("xxx=$x")
+
+
+
+
+
 println("[$rank] done")
 MPI.Barrier(comm)
 
 gather(x)
 
 MPI.Barrier(comm)
-
-
-
-
 
 
 
