@@ -17,7 +17,7 @@ function pingpong(roundtrips,msg_size)
     src = mod(rank-1, size)
  
     send_msg = Array(Float64, msg_size)
-    fill!(send_msg, Float64(rank))
+    fill!(send_msg, rank)
     
     size = sizeof(send_msg)
     #println("Message is $size bytes")
