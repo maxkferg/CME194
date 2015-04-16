@@ -14,7 +14,7 @@ function bitonic_sort!(x,up,ranks)
     if length(ranks) <= 1
         return ranks
     else
-        dist = round(Int,length(ranks) / 2)
+        dist = iround(length(ranks) / 2)
         first = bitonic_sort!(x, true, ranks[1:dist])
         second = bitonic_sort!(x, false, ranks[dist+1:end])
         return bitonic_merge!(x, up, vcat(first,second))
@@ -30,7 +30,7 @@ function bitonic_merge!(x,up,ranks)
         return ranks
     else
         bitonic_compare!(x, up, ranks)
-        dist = round(Int,length(ranks) / 2)
+        dist = iround(length(ranks) / 2)
         first = bitonic_merge!(x, up, ranks[1:dist])
         second = bitonic_merge!(x, up, ranks[dist+1:end])
         return vcat(first,second)
@@ -42,7 +42,7 @@ end
 function bitonic_compare!(x,up,ranks)
     # Perform a bitonic compare between the processors in @ranks
     # x is modified in place
-    dist = round(Int,length(ranks) / 2)
+    dist = iround(length(ranks) / 2)
     for i in 1:dist
         bitonic_swap!(x,up,ranks[i],ranks[i + dist])
     end
