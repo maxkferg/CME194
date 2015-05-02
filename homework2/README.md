@@ -27,6 +27,20 @@ mpirun -np 9 julia cannonExamples.jl
 mpirun -np 16 julia cannonExamples.jl
 ```
 
+## Running on the corn cluster
+This repository also includes bitonic.sh which can be used to
+submit bitonic to the corn cluster:
+
+```sh
+qsub cannon.sh
+
+# Unfriendly output
+qstat -f -u '*'
+
+# Friendly output
+/farmshare/user_data/chekh/qmem/qmem -u 
+```
+
 ## Limitations
 The limitations of this sorting algorithm are:
  1. The number of processors must be q^2

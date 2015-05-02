@@ -16,5 +16,5 @@
 cd $PBS_O_WORKDIR
 
 # run the program
-mpirun julia cannon.jl
+mpirun -n 64 julia cannon.jl
 exit 0

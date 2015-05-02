@@ -73,16 +73,13 @@ function cannonShift(matrix,shiftLeft,shiftUp,isSetup,nrows,ncols)
 	sendRank = _getProcessor(sendRow,sendCol,ncols)
 	recvRank = _getProcessor(recvRow,recvCol,ncols)
 
-	#wait(rand(1:1000,1,1)[1])
-	println("[$shift -> $sendCol  $recvCol  $sendRow  $recvRow]:[$sendRank  $recvRank]")
 	
-
 	new_matrix = copy(matrix)
 	rreq = MPI.Irecv!(new_matrix, recvRank,  MPI.ANY_TAG, comm)
-    println("$rank: Sending ($myRow,$myCol) -> ($myRow,$sendCol)")
+    #println("$rank: Sending ($myRow,$myCol) -> ($myRow,$sendCol)")
     
     sreq = MPI.Isend(matrix, sendRank, sendRank+32, comm)
-    println("$rank: Receiving ($myRow,$recvCol) -> ($myRow,$myCol)")
+    #println("$rank: Receiving ($myRow,$recvCol) -> ($myRow,$myCol)")
 
     stats = MPI.Waitall!([rreq, sreq])
     MPI.Barrier(comm)

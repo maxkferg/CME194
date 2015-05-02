@@ -88,3 +88,4 @@ end
 
 cannonMultiply2x2()
 cannonMultiply3x4()
+MPI.Finalize()
