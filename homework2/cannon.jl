@@ -14,6 +14,10 @@ comm = MPI.COMM_WORLD
 rank = MPI.Comm_rank(comm)
 csize = MPI.Comm_size(comm)
 
+# Suppress some error messages that occur in Julia 4.0
+# Julia 3.0 uses type int8 while Julia 4.0 uses Int8
+# Julia will throw an error if Int8 is used in version 3.0
+Int8 = int8
 
 
 function cannonMultiply(A,B)
